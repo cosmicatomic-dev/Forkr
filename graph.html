@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ELO Graph</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      max-width: 800px;
+      background: #fafafa;
+      color: #222;
+    }
+    h2 { font-size: 1.2em; margin: 20px 0 8px 0; text-align: center; }
+    #eloChart {
+      width: 98vw !important;
+      max-width: 780px;
+      height: 60vw !important;
+      max-height: 400px;
+      display: block;
+      margin: auto;
+      background: #fff;
+      border-radius: 9px;
+      box-shadow: 0 2px 8px #0001;
+    }
+    button {
+      display: block;
+      margin: 18px auto 9px auto;
+      font-size: 1.05em;
+      padding: 11px 26px;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    @media (max-width: 600px) {
+      #eloChart { width: 98vw !important; height: 40vw !important; min-height: 200px; }
+      h2 { font-size: 1em; }
+    }
+  </style>
+</head>
+<body>
+  <h2>ELO Score Progression</h2>
+  <canvas id="eloChart"></canvas>
+  <button onclick="window.close()">Close</button>
+  <script>
+    let data = JSON.parse(localStorage.getItem("eloGraphData"));
+    if (!data) {
+      document.body.innerHTML = "<h3>No graph data found. Please run a ranking session first.</h3>";
+    } else {
+      let { items, eloHistory, round } = data;
+      let ctx = document.getElementById('eloChart').getContext('2d');
+      let datasets = items.map((item, i) => ({
+        label: item,
+        data: eloHistory[item],
+        borderWidth: 2,
+        fill: false,
+        pointRadius: 0,
+        tension: 0.16
+      }));
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: eloHistory[items[0]].length}, (_, i) => i),
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Battle Number' } },
+            y: { title: { display: true, text: 'ELO Score' } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

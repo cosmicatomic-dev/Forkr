@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A/B ELO Ranker — Glassmorphism Apple UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background: linear-gradient(135deg, #e3edf7 0%, #c6dafc 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .glass {
+      margin: 36px auto 40px auto;
+      padding: 24px 18px 16px 18px;
+      border-radius: 30px;
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.15);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border: 1.2px solid rgba(255,255,255,0.36);
+      max-width: 420px;
+    }
+    h2 {
+      margin: 0 0 18px 0;
+      font-size: 1.33em;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #151f31;
+      text-align: left;
+      backdrop-filter: none;
+    }
+    label {
+      font-size: 1.05em;
+      color: #2a2a2a;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      margin-bottom: 0.3em;
+      display: block;
+    }
+    textarea {
+      width: 100%;
+      min-height: 84px;
+      font-size: 1.13em;
+      margin: 14px 0 15px 0;
+      padding: 13px 11px;
+      border: 1.5px solid rgba(225,235,255,0.48);
+      border-radius: 17px;
+      background: rgba(255,255,255,0.37);
+      color: #223;
+      resize: vertical;
+      box-sizing: border-box;
+      outline: none;
+      box-shadow: 0 2px 8px #acb4e024;
+      transition: border 0.25s;
+      backdrop-filter: blur(7px);
+    }
+    textarea:focus {
+      border: 1.8px solid #8ab6f7;
+      background: rgba(255,255,255,0.60);
+    }
+    button, .button {
+      font-size: 1.14em;
+      border: none;
+      border-radius: 15px;
+      background: rgba(84, 142, 255, 0.23);
+      color: #2365b4;
+      padding: 17px 0;
+      width: 100%;
+      margin: 10px 0;
+      box-shadow: 0 1.5px 4px #0071e327;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, box-shadow 0.17s;
+      letter-spacing: 0.01em;
+      backdrop-filter: blur(2px);
+    }
+    button:active, .button:active {
+      background: rgba(84, 142, 255, 0.34);
+      color: #1656a3;
+    }
+    #controls {
+      margin: 13px 0 4px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    #controls button {
+      width: 49%;
+      min-width: 110px;
+      font-size: 1.06em;
+      background: rgba(244,244,252,0.77);
+      color: #193a5f;
+      border: 1.2px solid #dde8f8;
+      margin: 0;
+      box-shadow: 0 1.5px 3.5px #a0d1fc24;
+      transition: background 0.18s, color 0.17s;
+    }
+    #controls button.primary {
+      background: rgba(52,117,228,0.82);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+    }
+    #controls button:active {
+      background: rgba(220,232,253,0.81);
+      color: #2061b4;
+    }
+    #options {
+      margin: 25px 0 9px 0;
+      text-align: center;
+    }
+    #options button {
+      display: inline-block;
+      width: 45%;
+      min-width: 100px;
+      margin: 0 1.5% 17px 1.5%;
+      padding: 18px 0;
+      font-size: 1.22em;
+      border-radius: 16px;
+      font-weight: 600;
+      background: rgba(235,241,255,0.81);
+      color: #2966b2;
+      border: 1.2px solid #e7effb;
+      box-shadow: 0 1.5px 6px #c1e1fd18;
+      transition: background 0.19s;
+    }
+    #options button:active {
+      background: rgba(155, 208, 255, 0.30);
+      color: #1756a0;
+    }
+    #options span {
+      display: block;
+      font-weight: 500;
+      font-size: 1.17em;
+      color: #6b7aa7;
+      margin: 7px 0 4px 0;
+      letter-spacing: 0.01em;
+      backdrop-filter: none;
+    }
+    #result {
+      margin-top: 22px;
+      margin-bottom: 7px;
+      font-weight: 500;
+      background: rgba(244,245,250,0.83);
+      padding: 16px 10px 16px 13px;
+      border-radius: 13px;
+      box-shadow: 0 1.5px 5px #a6c6ee17;
+      font-size: 1em;
+      backdrop-filter: blur(5px);
+    }
+    ol {
+      padding-left: 24px;
+      margin: 0 0 0 0;
+    }
+    h3 {
+      font-size: 1.08em;
+      font-weight: 600;
+      color: #3366bb;
+      margin-top: 0;
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+      backdrop-filter: none;
+    }
+    @media (max-width: 600px) {
+      .glass { border-radius: 0; margin-top: 3vw; margin-bottom: 7vw; padding: 12px 2vw 12px 2vw; }
+      h2 { font-size: 1.04em; }
+      #controls { flex-direction: column; gap: 7px; }
+      #controls button { width: 100%; }
+      #options button { width: 100%; margin: 0 0 10px 0; }
+      #result { padding: 10px 4px; font-size: 0.98em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glass">
+    <h2>Rank Your Favourites</h2>
+    <div id="userInput">
+      <label>Enter items (one per line):</label>
+      <textarea id="inputList" placeholder="Pizza&#10;Sushi&#10;Tacos..."></textarea>
+      <button class="primary" onclick="startRanking()">Start Ranking</button>
+    </div>
+    <div id="controls" style="display:none;">
+      <button onclick="restart()">Restart</button>
+      <button onclick="undo()">Undo</button>
+      <button onclick="showGraph()" class="primary" id="showGraphBtn" style="display:none;">See Graph</button>
+      <button onclick="exportCsv()" class="primary" id="exportCsvBtn" style="display:none;">Export ELO CSV</button>
+      <button onclick="exportCsvHistory()" class="primary" id="exportCsvHistoryBtn" style="display:none;">Export History CSV</button>
+    </div>
+    <div id="options"></div>
+    <div id="result"></div>
+    <button id="copyResult" onclick="copyResults()" style="display:none;width:100%;" class="primary">Copy Results</button>
+  </div>
+  <script>
+    // --- ELO CONFIG ---
+    const ELO_K = 32;
+
+    // --- STATE ---
+    let items = [];
+    let pool = [];
+    let pair = [];
+    let history = [];
+    let elo = {};
+    let eloHistory = {};
+    let round = 0;
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startRanking() {
+      let raw = document.getElementById('inputList').value.trim();
+      if (!raw) { alert('Please enter at least two items.'); return; }
+      items = raw.split('\n').map(e => e.trim()).filter(e => e.length > 0);
+      if (items.length < 2) { alert('Please enter at least two items.'); return; }
+      pool = shuffle([...items]);
+      history = [];
+      round = 0;
+      elo = {};
+      eloHistory = {};
+      items.forEach(item => {
+        elo[item] = 1500;
+        eloHistory[item] = [1500];
+      });
+      document.getElementById('userInput').style.display = "none";
+      document.getElementById('controls').style.display = "flex";
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('copyResult').style.display = 'none';
+      document.getElementById('showGraphBtn').style.display = 'inline-block';
+      document.getElementById('exportCsvBtn').style.display = 'inline-block';
+      document.getElementById('exportCsvHistoryBtn').style.display = 'inline-block';
+      document.getElementById('options').style.display = "block";
+      nextPair();
+    }
+
+    function pickRandomPair() {
+      if (pool.length < 2) pool = shuffle([...items]);
+      let idx1 = Math.floor(Math.random() * pool.length);
+      let idx2;
+      do { idx2 = Math.floor(Math.random() * pool.length); } while (idx2 === idx1);
+      return [pool[idx1], pool[idx2]];
+    }
+
+    function nextPair() {
+      pair = pickRandomPair();
+      showPair();
+    }
+
+    function showPair() {
+      document.getElementById('options').innerHTML =
+        `<button onclick="pick(0)">${pair[0]}</button>` +
+        `<span>vs</span>` +
+        `<button onclick="pick(1)">${pair[1]}</button>` +
+        `<div style="margin-top:8px; font-size:0.98em; color:#888; text-align:center;">Round: ${round+1}</div>`;
+    }
+
+    function updateElo(winner, loser) {
+      let Ra = elo[winner];
+      let Rb = elo[loser];
+      let Ea = 1 / (1 + Math.pow(10, (Rb - Ra) / 400));
+      let Eb = 1 / (1 + Math.pow(10, (Ra - Rb) / 400));
+      elo[winner] = Ra + ELO_K * (1 - Ea);
+      elo[loser]  = Rb + ELO_K * (0 - Eb);
+      items.forEach(item => {
+        eloHistory[item].push(elo[item]);
+      });
+    }
+
+    window.pick = function(index) {
+      history.push({
+        elo: JSON.parse(JSON.stringify(elo)),
+        eloHistory: JSON.parse(JSON.stringify(eloHistory)),
+        round,
+        pair: [...pair]
+      });
+      let winner = pair[index];
+      let loser  = pair[1 - index];
+      updateElo(winner, loser);
+      round++;
+      nextPair();
+    };
+
+    window.restart = function() {
+      document.getElementById('userInput').style.display = "block";
+      document.getElementById('controls').style.display = "none";
+      document.getElementById('options').innerHTML = '';
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('copyResult').style.display = "none";
+      document.getElementById('showGraphBtn').style.display = "none";
+      document.getElementById('exportCsvBtn').style.display = "none";
+      document.getElementById('exportCsvHistoryBtn').style.display = "none";
+      document.getElementById('options').style.display = "block";
+    };
+
+    window.undo = function() {
+      if (history.length === 0) return;
+      let prev = history.pop();
+      elo = JSON.parse(JSON.stringify(prev.elo));
+      eloHistory = JSON.parse(JSON.stringify(prev.eloHistory));
+      round = prev.round;
+      pair = [...prev.pair];
+      document.getElementById('options').style.display = "block";
+      showPair();
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('copyResult').style.display = "none";
+    };
+
+    window.copyResults = function() {
+      let sorted = items.slice().sort((a, b) => elo[b] - elo[a]);
+      let str = sorted.map((item, i) => `${i+1}. ${item} (${elo[item].toFixed(1)})`).join('\n');
+      navigator.clipboard.writeText(str).then(function() {
+        alert('Results copied to clipboard!');
+      }, function(err) {
+        alert('Failed to copy results');
+      });
+    };
+
+    function showResults() {
+      let sorted = items.slice().sort((a, b) => elo[b] - elo[a]);
+      document.getElementById('result').innerHTML =
+        "<h3>Current ELO Rankings:</h3><ol>" +
+        sorted.map(item => `<li>${item} <span style="color:#6c8fd3;font-size:0.98em;">(${elo[item].toFixed(1)})</span></li>`).join('') +
+        "</ol>";
+      document.getElementById('copyResult').style.display = "block";
+    }
+
+    setInterval(showResults, 500);
+
+    window.showGraph = function() {
+      let payload = { items, eloHistory, round };
+      localStorage.setItem("eloGraphData", JSON.stringify(payload));
+      window.open("graph.html", "_blank");
+    }
+
+    window.exportCsv = function() {
+      let sorted = items.slice().sort((a, b) => elo[b] - elo[a]);
+      let csv = "Rank,Item,ELO\n";
+      sorted.forEach((item, i) => {
+        csv += `${i+1},${item.replace(/"/g, '""')},${elo[item].toFixed(2)}\n`;
+      });
+      downloadCsv(csv, "elo-ranking.csv");
+    }
+
+    window.exportCsvHistory = function() {
+      let csv = "Round," + items.map(item => `"${item.replace(/"/g,'""')}"`).join(',') + "\n";
+      let numRounds = eloHistory[items[0]].length;
+      for (let r = 0; r < numRounds; r++) {
+        csv += r + "," + items.map(item => eloHistory[item][r].toFixed(2)).join(',') + "\n";
+      }
+      downloadCsv(csv, "elo-history.csv");
+    }
+
+    function downloadCsv(csv, filename) {
+      let blob = new Blob([csv], { type: 'text/csv' });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', filename);
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
